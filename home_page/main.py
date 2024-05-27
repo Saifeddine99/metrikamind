@@ -35,10 +35,10 @@ def dashboard():
         patient_id = get_patient_id(index, patient_ids)
         #st.write("id: ", patient_id)
 
-        dates, total_scores_ =  query_scores(patient_id)
+        all_responses_with_titles = query_scores(patient_id)
         
-        if dates:
-            time_series_plot(dates, total_scores_)
+        if all_responses_with_titles:
+            time_series_plot(all_responses_with_titles)
 
         else:
             st.error(f"You don't have any value stored in database")

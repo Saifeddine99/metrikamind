@@ -1,3 +1,10 @@
+def extract_before_total_score(s):
+    phrase = " total score"
+    if phrase in s:
+        return s.split(phrase)[0].strip()
+    else:
+        return s
+    
 def query_patients():
     from google.auth import default
     from googleapiclient.discovery import build
@@ -60,7 +67,7 @@ def query_patients():
     return(full_names, telecoms, patient_ids)
 
 def query_scores(patient_id):
-    dates, total_scores = [], []
+    title_scores_dict = {}
     from google.auth import default
     from googleapiclient.discovery import build
 
@@ -84,10 +91,17 @@ def query_scores(patient_id):
     for observation in response.get('entry', []):
         observation_data = observation.get('resource')
         if observation_data["subject"]["reference"] == ("Patient/" + patient_id):
+
+            questionnaire_title = extract_before_total_score(observation_data["code"]["coding"][0]["display"])
             date = observation_data["meta"]["lastUpdated"]
-            dates.append(date)
-
             score = observation_data["valueInteger"]
-            total_scores.append(score)
 
-    return(dates, total_scores)
+            if questionnaire_title in list(title_scores_dict.keys()):
+
+                title_scores_dict[questionnaire_title]["dates"].append(date)
+                title_scores_dict[questionnaire_title]["scores"].append(score)
+
+            else:
+                title_scores_dict[questionnaire_title] = {"dates": [date], "scores": [score]}
+
+    return title_scores_dict
